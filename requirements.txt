@@ -1,0 +1,3 @@
+snscrape @ git+https://github.com/JustAnotherArchivist/snscrape.git@da3d870e10236f6c45c6621b00bc87f9417e9425
+pandas
+altair
