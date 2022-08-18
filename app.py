@@ -4,7 +4,10 @@ import altair as alt
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 
-def twitterProfileScrape(twitter_url, n_tweets=500):
+
+########################### Data Pipeline ###########################
+
+def twitterProfileScrape(twitter_url, n_tweets=100):
     # Creating list to append tweet data to
     tweets_list = []
     user = twitter_url.replace('https://twitter.com/', '')
@@ -40,9 +43,10 @@ def twitterDataframeConcat(url_list, n_tweets):
     
     return dataframe
 
-def display_chart(kind, period='week'):
+########################### Data viz ###########################
+def make_chart(df, kind, period='week'):
     chart = (
-        alt.Chart(df.groupby(['Username', f'{period}'])[f'{kind}'].sum().reset_index(), title=f'Nº {kind}')
+        alt.Chart(df.groupby(['Username', f'{period}'])[f'{kind}'].sum().rolling(4).mean().reset_index(), title=f'Nº {kind}')
         .mark_area(opacity=0.3)
         .encode(
             x=f'{period}:T',
@@ -51,6 +55,20 @@ def display_chart(kind, period='week'):
         )
     )
     return chart
+
+########################### Event Handlers ###########################
+def handle_load_tweets(candidates, n_tweets):
+    
+    with st.spinner(f'Carregando os últimos {n_tweets} tweets...'):
+        df = twitterDataframeConcat(candidates, n_tweets)
+        return df
+
+def handle_show_analytics(df, period):
+    st.altair_chart(make_chart(df=df, kind='Likes', period=period), use_container_width=True)
+    st.altair_chart(make_chart(df=df, kind='Retweets', period=period), use_container_width=True)
+    st.altair_chart(make_chart(df=df, kind='Replies', period=period), use_container_width=True)
+
+###########################  UI  ###########################
 
 
 candidates = st.multiselect(
@@ -63,16 +81,11 @@ candidates = st.multiselect(
     format_func = lambda any : re.sub('https://twitter.com/', '', any)
 )
 
-n_tweets = st.slider('Escolha o número de tweets a serem analisados', 500, 4000)
+n_tweets = st.slider('Escolha o número de tweets a serem analisados', 100, 4000)
 period = st.radio('Escolha o intervalo', ('week', 'month'))
 
+if st.button('Carregar tweets'):
+    st.session_state['df'] = handle_load_tweets(candidates, n_tweets)
 
 if st.button('Analisar'):
-    with st.spinner(f'Carregando os últimos {n_tweets} tweets...'):
-        df = twitterDataframeConcat(candidates, n_tweets)
-
-        st.altair_chart(display_chart(kind='Likes', period=period), use_container_width=True)
-        st.altair_chart(display_chart(kind='Retweets', period=period), use_container_width=True)
-        st.altair_chart(display_chart(kind='Replies', period=period), use_container_width=True)
-else:
-    pass
+    handle_show_analytics(st.session_state['df'], period)
