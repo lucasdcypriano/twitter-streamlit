@@ -4,6 +4,10 @@ import altair as alt
 import snscrape.modules.twitter as sntwitter
 import pandas as pd
 
+########################### Streamlit configs ###########################
+
+st.set_page_config(page_title='Twitter dashboard')
+
 
 ########################### Data Pipeline ###########################
 
