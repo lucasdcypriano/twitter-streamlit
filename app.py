@@ -38,7 +38,7 @@ def twitterProfileScrape(twitter_url, n_tweets=100):
 
     return tweets_df
 
-@st.experimental_memo
+@st.experimental_memo(show_spinner=False)
 def twitterDataframeConcat(url_list, n_tweets):
     dataframe = pd.DataFrame(columns=['Username', 'Displayname', 'Description', 'Follower Count', 
                                       'Following Count', 'Datetime', 'Tweet Id', 'Text', 'Likes',
