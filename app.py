@@ -6,7 +6,7 @@ import pandas as pd
 
 ########################### Streamlit configs ###########################
 
-st.set_page_config(page_title='Twitter dashboard', page_icon='https://www.flaticon.com/br/icone-gratis/sinal-do-twitter_25347?term=twitter&page=1&position=5&page=1&position=5&related_id=25347&origin=tag')
+st.set_page_config(page_title='Twitter dashboard', page_icon='https://cdn-icons-png.flaticon.com/512/25/25347.png')
 
 
 ########################### Data Pipeline ###########################
