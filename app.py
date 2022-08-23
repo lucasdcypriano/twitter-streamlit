@@ -93,13 +93,19 @@ candidates = st.sidebar.multiselect(
 
 period = st.sidebar.radio('Escolha o intervalo de agregação', ('date','week', 'month'))
 
-if period == 'week':
+if period == 'week' or period == 'date':
     n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 100, 4000)
 else:
     n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 1000, 5000)
 
-if st.button('Carregar tweets'):
+if st.sidebar.button('Carregar tweets'):
     st.session_state['df'] = handle_load_tweets(candidates, n_tweets)
 
-if st.button('Analisar'):
+if st.sidebar.button('Analisar'):
     handle_show_analytics(st.session_state['df'], period)
+else:
+    st.markdown('# Twitter data dashboard')
+    st.write("Análise quantitativa do perfil do twitter dos candidatos a presidência")
+    st.write('Para usar o app, escolha os candidatos, o período de agregação dos dados e o número de tweets.  \
+              Depois clique em "Carregar tweets" e quando o carregamento for concluído (pode levar uns minutos),\
+               clique em "Analisar"')
