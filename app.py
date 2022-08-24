@@ -1,3 +1,4 @@
+from dataclasses import fields
 import streamlit as st
 import re
 import altair as alt
@@ -7,6 +8,39 @@ import pandas as pd
 ########################### Streamlit configs ###########################
 
 st.set_page_config(page_title='Twitter dashboard', page_icon='https://cdn-icons-png.flaticon.com/512/25/25347.png')
+hide_streamlit_style = """
+                <style>
+                div[data-testid="stToolbar"] {
+                visibility: hidden;
+                height: 0%;
+                position: fixed;
+                }
+                div[data-testid="stDecoration"] {
+                visibility: hidden;
+                height: 0%;
+                position: fixed;
+                }
+                div[data-testid="stStatusWidget"] {
+                visibility: hidden;
+                height: 0%;
+                position: fixed;
+                }
+                #MainMenu {
+                visibility: hidden;
+                height: 0%;
+                }
+                header {
+                visibility: hidden;
+                height: 0%;
+                }
+                footer {
+                visibility: hidden;
+                height: 0%;
+                }
+                </style>
+                """
+st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+
 
 
 ########################### Data Pipeline ###########################
@@ -53,17 +87,53 @@ def twitterDataframeConcat(url_list, n_tweets):
     return dataframe
 
 ########################### Data viz ###########################
+# def make_chart(df, kind, period='week'):
+#     chart = (
+#         alt.Chart(df.groupby(['Username', f'{period}'])[f'{kind}'].sum().rolling(4).mean().reset_index(), title=f'{kind}')
+#         .mark_area(opacity=0.3)
+#         .encode(
+#             x=f'{period}:T',
+#             y=alt.Y(f'{kind}:Q', stack=None),
+#             color='Username:N'
+#         )
+#     )
+#     return chart
+
 def make_chart(df, kind, period='week'):
-    chart = (
-        alt.Chart(df.groupby(['Username', f'{period}'])[f'{kind}'].sum().rolling(4).mean().reset_index(), title=f'{kind}')
-        .mark_area(opacity=0.3)
+    hover = alt.selection_single(
+        fields=[f'{period}'],
+        nearest=True,
+        on='mouseover',
+        empty='none',
+    )
+
+    lines = (
+        alt.Chart(df, title=f'{kind}')
+        .mark_line()
         .encode(
             x=f'{period}:T',
-            y=alt.Y(f'{kind}:Q', stack=None),
+            y=alt.Y(f'{kind}:Q'),
             color='Username:N'
         )
     )
-    return chart
+
+    points = lines.transform_filter(hover).mark_circle(size=65)
+
+    tooltips = (
+        alt.Chart(df)
+        .mark_rule()
+        .encode(
+            x=f'{period}',
+            y=f'{kind}',
+            opacity=alt.condition(hover, alt.value(0.3), alt.value(0)),
+            tooltip=[
+                alt.Tooltip(f'{period}', title=f'{period}'),
+                alt.Tooltip(f'{kind}', title=f'{kind}')
+            ],
+        )
+        .add_selection(hover)
+    )
+    return (lines + points + tooltips).interactive()
 
 ########################### Event Handlers ###########################
 def handle_load_tweets(candidates, n_tweets):
@@ -73,13 +143,17 @@ def handle_load_tweets(candidates, n_tweets):
         return df
 
 def handle_show_analytics(df, period):
-    st.altair_chart(make_chart(df=df, kind='engagement_ratio', period=period), use_container_width=True)
-    st.altair_chart(make_chart(df=df, kind='like_ratio', period=period), use_container_width=True)
-    st.altair_chart(make_chart(df=df, kind='RT_ratio', period=period), use_container_width=True)
-    st.altair_chart(make_chart(df=df, kind='reply_ratio', period=period), use_container_width=True)
-    st.altair_chart(make_chart(df=df, kind='Likes', period=period), use_container_width=True)
-    st.altair_chart(make_chart(df=df, kind='Retweets', period=period), use_container_width=True)
-    st.altair_chart(make_chart(df=df, kind='Replies', period=period), use_container_width=True)
+    st.latex(r'''engagement\underline{\hspace{.05in}}ratio = \frac{(Likes + Retweets + Replies)}{Followers}''')
+    st.altair_chart(make_chart(df=df, kind='engagement_ratio', period=period).interactive(), use_container_width=True)
+    st.latex(r'''like\underline{\hspace{.05in}}ratio = \frac{Likes}{Followers}''')
+    st.altair_chart(make_chart(df=df, kind='like_ratio', period=period).interactive(), use_container_width=True)
+    st.latex(r'''RT\underline{\hspace{.05in}}ratio = \frac{Retweets}{Followers}''')
+    st.altair_chart(make_chart(df=df, kind='RT_ratio', period=period).interactive(), use_container_width=True)
+    st.latex(r'''Reply\underline{\hspace{.05in}}ratio = \frac{Replies}{Followers}''')
+    st.altair_chart(make_chart(df=df, kind='reply_ratio', period=period).interactive(), use_container_width=True)
+    st.altair_chart(make_chart(df=df, kind='Likes', period=period).interactive(), use_container_width=True)
+    st.altair_chart(make_chart(df=df, kind='Retweets', period=period).interactive(), use_container_width=True)
+    st.altair_chart(make_chart(df=df, kind='Replies', period=period).interactive(), use_container_width=True)
 
 ###########################  UI  ###########################
 
@@ -95,18 +169,20 @@ candidates = st.sidebar.multiselect(
     format_func = lambda any : re.sub('https://twitter.com/', '', any)
 )
 
-period = st.sidebar.radio('Escolha o intervalo de agregação', ('date','week', 'month'))
+#period = st.sidebar.radio('Escolha o intervalo de agregação', ('date','week', 'month'))
 
-if period == 'week' or period == 'date':
-    n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 100, 4000)
-else:
-    n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 1000, 5000)
+# if period == 'week' or period == 'date':
+#     n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 100, 4000)
+# else:
+#     n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 1000, 5000)
+
+n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 1000, 5000)
 
 if st.sidebar.button('Carregar tweets'):
     st.session_state['df'] = handle_load_tweets(candidates, n_tweets)
 
 if st.sidebar.button('Analisar'):
-    handle_show_analytics(st.session_state['df'], period)
+    handle_show_analytics(st.session_state['df'], period='date')
 else:
     st.markdown('# Twitter data dashboard')
     st.write("Análise quantitativa do perfil do twitter dos candidatos a presidência")
