@@ -8,38 +8,38 @@ import pandas as pd
 ########################### Streamlit configs ###########################
 
 st.set_page_config(page_title='Twitter dashboard', page_icon='https://cdn-icons-png.flaticon.com/512/25/25347.png')
-hide_streamlit_style = """
-                <style>
-                div[data-testid="stToolbar"] {
-                visibility: hidden;
-                height: 0%;
-                position: fixed;
-                }
-                div[data-testid="stDecoration"] {
-                visibility: hidden;
-                height: 0%;
-                position: fixed;
-                }
-                div[data-testid="stStatusWidget"] {
-                visibility: hidden;
-                height: 0%;
-                position: fixed;
-                }
-                #MainMenu {
-                visibility: hidden;
-                height: 0%;
-                }
-                header {
-                visibility: hidden;
-                height: 0%;
-                }
-                footer {
-                visibility: hidden;
-                height: 0%;
-                }
-                </style>
-                """
-st.markdown(hide_streamlit_style, unsafe_allow_html=True)
+# hide_streamlit_style = """
+#                 <style>
+#                 div[data-testid="stToolbar"] {
+#                 visibility: hidden;
+#                 height: 0%;
+#                 position: fixed;
+#                 }
+#                 div[data-testid="stDecoration"] {
+#                 visibility: hidden;
+#                 height: 0%;
+#                 position: fixed;
+#                 }
+#                 div[data-testid="stStatusWidget"] {
+#                 visibility: hidden;
+#                 height: 0%;
+#                 position: fixed;
+#                 }
+#                 #MainMenu {
+#                 visibility: hidden;
+#                 height: 0%;
+#                 }
+#                 header {
+#                 visibility: hidden;
+#                 height: 0%;
+#                 }
+#                 footer {
+#                 visibility: hidden;
+#                 height: 0%;
+#                 }
+#                 </style>
+#                 """
+# st.markdown(hide_streamlit_style, unsafe_allow_html=True)
 
 
 
@@ -87,17 +87,6 @@ def twitterDataframeConcat(url_list, n_tweets):
     return dataframe
 
 ########################### Data viz ###########################
-# def make_chart(df, kind, period='week'):
-#     chart = (
-#         alt.Chart(df.groupby(['Username', f'{period}'])[f'{kind}'].sum().rolling(4).mean().reset_index(), title=f'{kind}')
-#         .mark_area(opacity=0.3)
-#         .encode(
-#             x=f'{period}:T',
-#             y=alt.Y(f'{kind}:Q', stack=None),
-#             color='Username:N'
-#         )
-#     )
-#     return chart
 
 def make_chart(df, kind, period='week'):
     hover = alt.selection_single(
