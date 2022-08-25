@@ -135,6 +135,19 @@ def make_chart(df, kind, period='week'):
     )
     return (lines + points + tooltips).interactive()
 
+def make_boxplot(df, kind):
+    chart = (
+        alt.Chart(df, title=f'{kind}')
+        .mark_boxplot(size=50, extent=2, outliers=False)
+        .encode(
+            x='Username:N',
+            y=alt.Y(f'{kind}:Q', scale=alt.Scale(zero=False)),
+            color=alt.Color('Username')
+        )
+        .properties(width=600)
+    )
+    return chart
+
 ########################### Event Handlers ###########################
 def handle_load_tweets(candidates, n_tweets):
     
@@ -155,6 +168,10 @@ def handle_show_analytics(df, period):
     st.altair_chart(make_chart(df=df, kind='Retweets', period=period).interactive(), use_container_width=True)
     st.altair_chart(make_chart(df=df, kind='Replies', period=period).interactive(), use_container_width=True)
 
+def handle_show_boxplot(df):
+    st.altair_chart(make_boxplot(df=df, kind='Likes'), use_container_width=True)
+    st.altair_chart(make_boxplot(df=df, kind='Retweets'), use_container_width=True)
+    st.altair_chart(make_boxplot(df=df, kind='Replies'), use_container_width=True)
 ###########################  UI  ###########################
 
 
@@ -169,20 +186,18 @@ candidates = st.sidebar.multiselect(
     format_func = lambda any : re.sub('https://twitter.com/', '', any)
 )
 
-#period = st.sidebar.radio('Escolha o intervalo de agregação', ('date','week', 'month'))
-
-# if period == 'week' or period == 'date':
-#     n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 100, 4000)
-# else:
-#     n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 1000, 5000)
-
 n_tweets = st.sidebar.slider('Escolha o número de tweets a serem analisados', 1000, 5000)
 
-if st.sidebar.button('Carregar tweets'):
-    st.session_state['df'] = handle_load_tweets(candidates, n_tweets)
+tab1, tab2 = st.tabs(['Linha', 'Boxplot'])
 
-if st.sidebar.button('Analisar'):
-    handle_show_analytics(st.session_state['df'], period='date')
+if st.sidebar.button('Carregar tweets e analisar'):
+    st.session_state['df'] = handle_load_tweets(candidates, n_tweets)
+    
+    with tab1:
+        handle_show_analytics(st.session_state['df'], period='date')
+    with tab2:
+        handle_show_boxplot(st.session_state['df'])
+
 else:
     st.markdown('# Twitter data dashboard')
     st.write("Análise quantitativa do perfil do twitter dos candidatos a presidência")
