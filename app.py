@@ -101,7 +101,7 @@ def make_chart(df, kind, period='week'):
         .mark_line()
         .encode(
             x=f'{period}:T',
-            y=alt.Y(f'{kind}:Q'),
+            y=alt.Y(f'sum({kind}):Q'),
             color='Username:N'
         )
     )
@@ -190,6 +190,7 @@ if st.sidebar.button('Carregar tweets e analisar'):
 else:
     st.markdown('# Twitter data dashboard')
     st.write("Análise quantitativa do perfil do twitter dos candidatos a presidência")
-    st.write('Para usar o app, escolha os candidatos, o período de agregação dos dados e o número de tweets.  \
-              Depois clique em "Carregar tweets" e quando o carregamento for concluído (pode levar uns minutos),\
-               clique em "Analisar"')
+    st.write('Para usar o app, escolha os candidatos e o número de tweets.  \
+              Depois clique em "Carregar tweets e analisar" e quando o carregamento for concluído (pode levar uns minutos),\
+               navegue pelas abas para ver o comportamento ao longo do tempo nos gráficos de linha ou um resumo das métricas \
+                no boxplot')
