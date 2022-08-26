@@ -101,7 +101,7 @@ def make_chart(df, kind, period='week'):
         .mark_line()
         .encode(
             x=f'{period}:T',
-            y=alt.Y(f'sum({kind}):Q'),
+            y=alt.Y(f'sum({kind}):Q', title=f'{kind}'),
             color='Username:N'
         )
     )
